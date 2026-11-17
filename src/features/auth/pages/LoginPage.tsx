@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, type SubmitEvent } from "react";
 
 import { LockKeyhole, Mail, Eye, EyeOff, ShieldCheck } from "lucide-react";
 
@@ -18,7 +18,7 @@ export function LoginPage() {
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState("");
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
 
     event.preventDefault();
 
