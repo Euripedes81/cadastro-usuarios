@@ -17,7 +17,7 @@ namespace Infrastructure.Extensions
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddDbContext<UsuarioDbContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("Remoto")));
+                options.UseSqlServer(configuration.GetConnectionString("Docker")));
             services.AddScoped<IUsuarioRepository, UsuarioRepository>();
             services.AddScoped<IGenericRepository<PerfilUsuario>, EfRepository<PerfilUsuario>>();
             services.AddScoped<ITokenService, TokenService>();

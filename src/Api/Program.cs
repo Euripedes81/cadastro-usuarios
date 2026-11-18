@@ -127,14 +127,14 @@ builder.Services.AddSwaggerGen(c =>
         Description = "API para gerenciamento de Cadastro de Usuários",
     });    
 
-    if (!builder.Environment.IsDevelopment())
-    {
-        c.AddServer(new OpenApiServer
-        {
-            Url = "https://cadastro-usuario.azurewebsites.net/",
-            Description = "Cadastro de Usuários"
-        });
-    }
+    //if (!builder.Environment.IsDevelopment())
+    //{
+    //    c.AddServer(new OpenApiServer
+    //    {
+    //        Url = "https://cadastro-usuario.azurewebsites.net/",
+    //        Description = "Cadastro de Usuários"
+    //    });
+    //}
 
     // Adiciona comentários XML ao Swagger
     var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
@@ -181,6 +181,17 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("FrontendPolicy", policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:5173", "http://192.168.91.191:3000", "http://192.168.91.191:8080")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 
 // Resolve o provider de versões
@@ -201,6 +212,8 @@ var provider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>()
 //}
 
 app.UseHttpsRedirection();
+
+app.UseCors("FrontendPolicy");
 
 app.UseAuthorization();
 
