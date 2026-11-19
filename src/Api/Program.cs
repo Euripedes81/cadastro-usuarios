@@ -181,17 +181,6 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("FrontendPolicy", policy =>
-    {
-        policy
-            .WithOrigins("http://localhost:5173", "http://192.168.91.191:3000", "http://192.168.91.191:8080")
-            .AllowAnyHeader()
-            .AllowAnyMethod();
-    });
-});
-
 var app = builder.Build();
 
 // Resolve o provider de versões
@@ -212,8 +201,6 @@ var provider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>()
 //}
 
 app.UseHttpsRedirection();
-
-app.UseCors("FrontendPolicy");
 
 app.UseAuthorization();
 
