@@ -1,0 +1,104 @@
+name: cadastro-usuarios
+
+services:
+
+  # =====================================
+  # SQL SERVER
+  # =====================================
+  sql_server:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: cadastro-usuarios-sqlserver
+
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Express
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+
+    ports:
+      - "1433:1433"
+
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - bash -c '</dev/tcp/localhost/1433'
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+    networks:
+      - cadastro_network
+
+    restart: unless-stopped
+
+
+  # =====================================
+  # API .NET
+  # =====================================
+  api:
+    image: api-cadastro-usuarios:latest
+    container_name: cadastro-usuarios-api
+    ports:
+      - "8080:8080"
+      
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+
+      ConnectionStrings__Docker: "Server=sql_server,1433;Database=${MSSQL_DATABASE};User Id=sa;Password=${MSSQL_SA_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
+
+    depends_on:
+      sql_server:
+        condition: service_healthy
+
+    networks:
+      - cadastro_network
+
+    restart: unless-stopped
+
+
+  # =====================================
+  # FRONTEND REACT
+  # =====================================
+  web:
+    image: web-cadastro-usuarios:latest
+    container_name: cadastro-usuarios-web
+
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: /v1
+
+    ports:
+      - "81:80"
+
+    depends_on:
+      - api
+
+    networks:
+      - cadastro_network
+
+    restart: unless-stopped
+
+
+# =====================================
+# NETWORKS
+# =====================================
+networks:
+  cadastro_network:
+    driver: bridge
+
+
+# =====================================
+# VOLUMES
+# =====================================
+volumes:
+  sqlserver_data:
