@@ -7,6 +7,8 @@ if (!API_BASE_URL) {
 }
 
 export async function apiPost<TRequest, TResponse>(endpoint: string, data: TRequest): Promise<TResponse> {
+    
+    console.log("apiPost called with endpoint:", endpoint, "and data:", data);
 
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: "POST",
@@ -25,6 +27,8 @@ export async function apiPost<TRequest, TResponse>(endpoint: string, data: TRequ
             `Erro na comunicação com o servidor (${response.status}).`
         );
     }
+
+    console.log("apiPost response:", response);
 
     return response.json() as Promise<TResponse>;
 }
