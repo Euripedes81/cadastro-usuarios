@@ -41,18 +41,22 @@ services:
   api:
     image: api-cadastro-usuarios:latest
     container_name: cadastro-usuarios-api
-    ports:
-      - "8080:8080"
-      
+
     build:
       context: ./backend
       dockerfile: Dockerfile
+
+    ports:
+      - "8080:8080"
 
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
 
-      ConnectionStrings__Docker: "Server=sql_server,1433;Database=${MSSQL_DATABASE};User Id=sa;Password=${MSSQL_SA_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
+      ConnectionStrings__Default: "Server=sql_server,1433;Database=${MSSQL_DATABASE};User Id=${MSSQL_USER};Password=${MSSQL_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
+      Jwt__Key: "${JWT_SECRET}"
+      Jwt__Issuer: "https://localhost/"
+      Jwt__Audience: "https://localhost/"
 
     depends_on:
       sql_server:
