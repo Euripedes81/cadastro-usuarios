@@ -1,0 +1,224 @@
+﻿using Api.Responses;
+using Application.Extensions;
+using Infrastructure.Extensions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Versioning;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using System.Security.Claims;
+using System.Text;
+using System.Text.Json;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddApplication();   
+builder.Services.AddInfrastructure(builder.Configuration);
+
+var jwtConfig = builder.Configuration.GetSection("Jwt");
+var key = Encoding.UTF8.GetBytes(jwtConfig["Key"]!);
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtConfig["Issuer"],
+            ValidAudience = jwtConfig["Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ClockSkew = TimeSpan.Zero
+        };
+      
+        options.Events = new JwtBearerEvents
+        {
+            OnAuthenticationFailed = context =>
+            {
+                if (context.Exception is SecurityTokenExpiredException)
+                {
+                    context.Response.Headers.Append("Token-Expired", "true");
+                }
+                return Task.CompletedTask;
+            },
+            OnChallenge = context =>
+            {
+                context.HandleResponse();
+                context.Response.StatusCode = 401;
+                context.Response.ContentType = "application/json";
+
+                var result = JsonSerializer.Serialize(new ErrorResponse(message: "Token inválido ou expirado.", errorCode: "401"));
+                return context.Response.WriteAsync(result);
+            },
+            OnForbidden = context =>
+            {
+                context.Response.StatusCode = 403;
+                context.Response.ContentType = "application/json";
+
+                var result = JsonSerializer.Serialize(new ErrorResponse(message: "Acesso negado.", errorCode: "403"));
+                return context.Response.WriteAsync(result);
+            }
+        };
+    });
+
+// Add services to the container.
+//[Authorize] global em todos os endpoints
+builder.Services.AddControllers(options =>
+{
+    var policy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+
+    options.Filters.Add(new AuthorizeFilter(policy));
+});
+
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("OwnerOrAdmin", policy =>
+    policy.RequireAssertion(context =>
+    {
+        var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        var routeId = context.Resource switch
+        {
+            HttpContext httpContext =>
+                httpContext.GetRouteValue("id")?.ToString(),
+
+            AuthorizationFilterContext mvcContext =>
+                mvcContext.RouteData.Values["id"]?.ToString(),
+
+            _ => null
+        };
+
+        return userId == routeId || context.User.IsInRole("Administrador");
+    })
+);
+
+// Versionamento da API
+builder.Services.AddApiVersioning(options =>
+{
+    options.AssumeDefaultVersionWhenUnspecified = true;
+    options.DefaultApiVersion = new ApiVersion(1, 0);
+    options.ReportApiVersions = true;
+    options.ApiVersionReader = new UrlSegmentApiVersionReader();
+});
+
+// Exploração para múltiplas versões no Swagger
+builder.Services.AddVersionedApiExplorer(options =>
+{
+    options.GroupNameFormat = "'v'VVV";
+    options.SubstituteApiVersionInUrl = true;
+});
+
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "API Cadastro de Usuários",
+        Version = "v1",
+        Description = "API para gerenciamento de Cadastro de Usuários",
+    });    
+
+    //if (!builder.Environment.IsDevelopment())
+    //{
+    //    c.AddServer(new OpenApiServer
+    //    {
+    //        Url = "https://cadastro-usuario.azurewebsites.net/",
+    //        Description = "Cadastro de Usuários"
+    //    });
+    //}
+
+    // Adiciona comentários XML ao Swagger
+    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    c.IncludeXmlComments(xmlPath);
+
+    // Swagger JWT auth
+    var jwtSecurityScheme = new OpenApiSecurityScheme
+    {
+        BearerFormat = "JWT",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = JwtBearerDefaults.AuthenticationScheme,
+        Description = "Digite o token JWT no campo abaixo.",
+
+        Reference = new OpenApiReference
+        {
+            Id = JwtBearerDefaults.AuthenticationScheme,
+            Type = ReferenceType.SecurityScheme
+        }
+    };
+
+    c.AddSecurityDefinition(jwtSecurityScheme.Reference.Id, jwtSecurityScheme);
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        { jwtSecurityScheme, Array.Empty<string>() }
+    });
+
+
+    // Adiciona filtro de resposta global 
+    //c.OperationFilter<GlobalResponseOperationFilter>();
+
+    c.CustomSchemaIds(type =>
+    {
+        if (type.IsGenericType)
+        {
+            var genericType = type.GetGenericTypeDefinition();
+            var genericArgs = string.Join("", type.GetGenericArguments().Select(t => t.Name));
+            return $"{genericType.Name.Replace("`1", "")}{genericArgs.Replace("DTO", "")}";
+        }
+        return type.Name.Replace("DTO", "");
+    });
+});
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("FrontendPolicy", policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:5173", "http://192.168.91.191:3000", "http://192.168.91.191:8080")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
+var app = builder.Build();
+
+// Resolve o provider de versões
+var provider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
+
+// Configure the HTTP request pipeline.
+//if (app.Environment.IsDevelopment())
+//{
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        foreach (var desc in provider.ApiVersionDescriptions)
+        {
+            options.SwaggerEndpoint($"{desc.GroupName}/swagger.json", $"Cadastro {desc.GroupName.ToUpper()}");
+            options.RoutePrefix = "swagger";
+        }
+    });
+//}
+
+app.UseHttpsRedirection();
+
+app.UseCors("FrontendPolicy");
+
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();
+
+public partial class Program { }
