@@ -140,25 +140,32 @@ namespace Application.Services
         }
         public async Task<ApplicationResult<LoginResponseDTO>> FazerLoginAsync(LoginDTO loginDTO)
         {
-            var usuario = await _usuarioRepository.FazerLogin(new Usuario
+            try
             {
-                Email = loginDTO.Email
-            });
+                var usuario = await _usuarioRepository.FazerLogin(new Usuario
+                {
+                    Email = loginDTO.Email
+                });
 
-            if (usuario == null || usuario.Inativo || !_passwordHasher.VerifyPassword(usuario.Senha!, loginDTO.Senha!))
+                if (usuario == null || usuario.Inativo || !_passwordHasher.VerifyPassword(usuario.Senha!, loginDTO.Senha!))
+                {
+                    return ApplicationResult<LoginResponseDTO>.Failure(ApplicationErrors.Unauthorized);
+                }
+
+                var token = _tokenService.GerarToken(usuario);
+
+                return ApplicationResult<LoginResponseDTO>.Success(new LoginResponseDTO
+                {
+                    Id = usuario.Id,
+                    Nome = usuario.Nome,
+                    Email = usuario.Email,
+                    Token = token
+                });
+            }
+            catch (Exception)
             {
-                return ApplicationResult<LoginResponseDTO>.Failure(ApplicationErrors.Unauthorized);
-            }           
-
-            var token = _tokenService.GerarToken(usuario);
-
-            return ApplicationResult<LoginResponseDTO>.Success(new LoginResponseDTO
-            {
-                Id = usuario.Id,
-                Nome = usuario.Nome,
-                Email = usuario.Email,
-                Token = token
-            });
+                return ApplicationResult<LoginResponseDTO>.Failure(ApplicationErrors.InternalServerError);
+            }
         }
     }
 }
