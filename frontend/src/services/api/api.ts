@@ -1,4 +1,4 @@
-import { handleApiError } from "./apiError";
+import { ApiError, handleApiError } from "./apiError";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -24,18 +24,30 @@ async function request<TResponse>(endpoint: string, options: RequestInit = {}, a
     headers.set("Authorization", `Bearer ${token}`);
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers,
-  });
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...options,
+      headers,
+    });
 
-  if (!response.ok) {
-    throw await handleApiError(response);
+    if (!response.ok) {
+      throw await handleApiError(response);
+    }
+
+    const data = await response.json();
+
+    return data as TResponse;
+
+  } catch (error) {
+    
+    if (error instanceof ApiError) {
+      throw error;
+    }
+
+    throw new Error(
+      "Não foi possível conectar ao servidor. Verifique sua conexão ou tente novamente."
+    );
   }
-
-  const data = await response.json();
-
-  return data as TResponse;
 }
 
 export function apiPost<TRequest, TResponse>(endpoint: string, data: TRequest): Promise<TResponse> {
