@@ -145,17 +145,10 @@ namespace Application.Services
                 Email = loginDTO.Email
             });
 
-            if (usuario == null)
+            if (usuario == null || usuario.Inativo || !_passwordHasher.VerifyPassword(usuario.Senha!, loginDTO.Senha!))
             {
-                return ApplicationResult<LoginResponseDTO>
-                    .Failure(ApplicationErrors.Unauthorized);
-            }
-
-            if (!_passwordHasher.VerifyPassword(usuario.Senha!, loginDTO.Senha!))
-            {
-                return ApplicationResult<LoginResponseDTO>
-                    .Failure(ApplicationErrors.Unauthorized);
-            }
+                return ApplicationResult<LoginResponseDTO>.Failure(ApplicationErrors.Unauthorized);
+            }           
 
             var token = _tokenService.GerarToken(usuario);
 
