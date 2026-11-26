@@ -11,6 +11,7 @@ import type { User } from "../types/user.types";
 import { USER_PROFILE_ADMIN, } from "../types/user.types";
 
 import "../styles/users.scss";
+import {  useLocation, useNavigate } from "react-router-dom";
 
 export function UsersPage() {
 
@@ -19,10 +20,13 @@ export function UsersPage() {
 
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
-  
-  console.log("Usuario autenticado:", usuarioAutenticado, USER_PROFILE_ADMIN);
 
   const isAdmin = usuarioAutenticado?.perfil.nome === USER_PROFILE_ADMIN;
+
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [successMessage, setSuccessMessage] = useState("");
+
 
   useEffect(() => {
 
@@ -71,6 +75,21 @@ export function UsersPage() {
 
   }, []);
 
+  useEffect(() => {
+
+    const message = location.state?.successMessage;
+
+    if (message) {
+
+      setSuccessMessage(message);
+
+      navigate(location.pathname, {
+        replace: true,
+        state: null,
+      });
+    }
+  }, [location.state, location.pathname, navigate]);
+
   function handleLogout() {
 
     authService.logout();
@@ -102,7 +121,7 @@ export function UsersPage() {
   }
 
   return (
-    <main className="users-page">
+    <main className="users-page">     
 
       <header className="users-header">
 
@@ -184,7 +203,11 @@ export function UsersPage() {
           </div>
 
         </div>
-
+        {successMessage && (
+          <div className="users-success-message" role="status">
+            {successMessage}
+          </div>
+        )}
         <div className="users-table-container">
 
           <table className="users-table">
@@ -253,11 +276,7 @@ export function UsersPage() {
                           : "Você não possui permissão para editar"
                       }
                       aria-label={`Editar ${usuario.nome}`}
-                      onClick={() => {
-                        window.location.assign(
-                          `/usuarios/${usuario.id}/editar`
-                        );
-                      }}
+                      onClick={() => navigate(`/usuarios/${usuario.id}/editar`)}
                     >
                       <Pencil size={17} />
                     </button>

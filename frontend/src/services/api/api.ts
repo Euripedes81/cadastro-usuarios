@@ -1,3 +1,5 @@
+import { authService } from "../../features/auth/services/authService";
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 if (!API_BASE_URL) {
@@ -65,4 +67,32 @@ export function apiGet<TResponse>(endpoint: string): Promise<TResponse> {
     },
     true
   );
+}
+
+export async function apiPut<T>( endpoint: string, body: unknown ): Promise<T> {
+
+  const token = authService.getToken();
+
+  const response = await fetch(
+    `${API_BASE_URL}${endpoint}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token
+          ? { Authorization: `Bearer ${token}` }
+          : {}),
+      },
+      body: JSON.stringify(body),
+    }
+  );
+
+  if (!response.ok) {
+
+    throw new Error(
+      `Erro ao atualizar dados. HTTP ${response.status}`
+    );
+  }
+
+  return response.json() as Promise<T>;
 }

@@ -1,6 +1,6 @@
-import { apiGet } from "../../../services/api/api";
+import { apiGet, apiPut } from "../../../services/api/api";
 
-import type { ApiResponse, User } from "../types/user.types";
+import type { ApiResponse, UpdateUserResponse, UpdateUserRequest, User } from "../types/user.types";
 
 const USERS_ENDPOINT = "/usuarios";
 
@@ -18,6 +18,13 @@ export const userService = {
     const response = await apiGet<ApiResponse<User>>(`${USERS_ENDPOINT}/${id}`);
 
     return response.data;
-  }
+  },
 
+   async update( id: number, user: UpdateUserRequest ): Promise<UpdateUserResponse> {
+
+    return apiPut<UpdateUserResponse>(
+      `${USERS_ENDPOINT}/${id}`,
+      user
+    );
+  }
 };

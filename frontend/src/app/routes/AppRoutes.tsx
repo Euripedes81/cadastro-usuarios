@@ -1,8 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-
 import { LoginPage } from "../../features/auth/pages/LoginPage";
 import { UsersPage } from "../../features/users/pages/UsersPage";
-
+import { EditUserPage } from "../../features/users/pages/EditUserPage";
 import { ProtectedRoute } from "./ProtectedRoute";
 
 export function AppRoutes() {
@@ -15,6 +14,8 @@ export function AppRoutes() {
       <Route element={<ProtectedRoute />}>
 
         <Route path="/usuarios" element={<UsersPage />} />
+        <Route path="/usuarios/:id/editar" element={<EditUserPage />}
+        />
 
       </Route>
 

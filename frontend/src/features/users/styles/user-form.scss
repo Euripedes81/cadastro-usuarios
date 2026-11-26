@@ -1,0 +1,285 @@
+@use "../../../styles/variables" as *;
+
+.edit-user-page {
+  min-height: 100vh;
+  background: #f8fafc;
+}
+
+.edit-user-header {
+  padding: 24px 48px;
+  background: white;
+  border-bottom: 1px solid $color-border;
+}
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+
+  border: none;
+  background: transparent;
+
+  color: $color-text-light;
+  font-size: 14px;
+  font-weight: 500;
+
+  cursor: pointer;
+
+  &:hover {
+    color: $color-primary;
+  }
+}
+
+.edit-user-content {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 48px;
+}
+
+.edit-user-title {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+
+  margin-bottom: 32px;
+
+  h1 {
+    color: $color-text;
+    font-size: 28px;
+    margin-bottom: 8px;
+  }
+
+  p {
+    color: $color-text-light;
+    font-size: 14px;
+  }
+}
+
+.edit-user-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #eff6ff;
+  color: $color-primary;
+}
+
+.edit-user-card {
+  background: white;
+  border: 1px solid $color-border;
+  border-radius: 16px;
+  overflow: hidden;
+
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.03);
+}
+
+.edit-user-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 24px;
+
+  border-bottom: 1px solid $color-border;
+
+  h2 {
+    font-size: 17px;
+    color: $color-text;
+  }
+
+  span {
+    font-size: 12px;
+    color: $color-text-light;
+  }
+}
+
+.user-form {
+  padding: 32px;
+}
+
+.user-form-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  label {
+    font-size: 13px;
+    font-weight: 600;
+    color: $color-text;
+  }
+
+  input,
+  select {
+    width: 100%;
+    min-height: 46px;
+
+    padding: 12px 14px;
+
+    border: 1px solid $color-border;
+    border-radius: 10px;
+
+    background: white;
+    color: $color-text;
+
+    font-size: 14px;
+
+    outline: none;
+    transition: 0.2s;
+
+    &:focus {
+      border-color: $color-primary;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+    }
+  }
+}
+
+.form-error {
+  color: $color-danger;
+  font-size: 12px;
+}
+
+.form-field-status {
+  justify-content: center;
+}
+
+.status-toggle {
+  display: flex !important;
+  align-items: center;
+  gap: 10px;
+
+  min-height: 46px;
+
+  input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    min-height: auto;
+    padding: 0;
+
+    accent-color: $color-primary;
+  }
+
+  span {
+    font-size: 14px;
+    color: $color-text-light;
+  }
+}
+
+.user-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+
+  margin-top: 32px;
+  padding-top: 24px;
+
+  border-top: 1px solid $color-border;
+}
+
+.button-primary,
+.button-secondary {
+  min-height: 44px;
+  padding: 12px 20px;
+
+  border-radius: 10px;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: 0.2s;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.button-primary {
+  border: none;
+  background: $color-primary;
+  color: white;
+
+  &:hover:not(:disabled) {
+    filter: brightness(0.95);
+  }
+}
+
+.button-secondary {
+  border: 1px solid $color-border;
+  background: white;
+  color: $color-text;
+
+  &:hover:not(:disabled) {
+    background: #f8fafc;
+  }
+}
+
+.edit-user-loading,
+.edit-user-error {
+  min-height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap: 16px;
+
+  color: $color-text-light;
+}
+
+.edit-user-error {
+  text-align: center;
+  padding: 24px;
+
+  h2 {
+    color: $color-text;
+  }
+}
+
+@media (max-width: 768px) {
+
+  .edit-user-header {
+    padding: 20px;
+  }
+
+  .edit-user-content {
+    padding: 28px 20px;
+  }
+
+  .edit-user-title h1 {
+    font-size: 23px;
+  }
+
+  .user-form {
+    padding: 24px 20px;
+  }
+
+  .user-form-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .user-form-actions {
+    flex-direction: column-reverse;
+
+    button {
+      width: 100%;
+    }
+  }
+}
+
+.form-hint {
+  color: $color-text-light;
+  font-size: 12px;
+  line-height: 1.5;
+}
