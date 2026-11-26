@@ -1,4 +1,4 @@
-import { authService } from "../../features/auth/services/authService";
+import { handleApiError } from "./apiError";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -28,23 +28,14 @@ async function request<TResponse>(endpoint: string, options: RequestInit = {}, a
     ...options,
     headers,
   });
-  
+
   if (!response.ok) {
-
-    if (response.status === 401) {
-      throw new Error("Sessão expirada ou acesso não autorizado.");
-    }
-
-    if (response.status === 403) {
-      throw new Error("Você não possui permissão para esta operação.");
-    }
-
-    throw new Error(
-      `Erro na comunicação com o servidor (${response.status}).`
-    );
+    throw await handleApiError(response);
   }
 
-  return response.json() as Promise<TResponse>;
+  const data = await response.json();
+
+  return data as TResponse;
 }
 
 export function apiPost<TRequest, TResponse>(endpoint: string, data: TRequest): Promise<TResponse> {
@@ -69,30 +60,14 @@ export function apiGet<TResponse>(endpoint: string): Promise<TResponse> {
   );
 }
 
-export async function apiPut<T>( endpoint: string, body: unknown ): Promise<T> {
+export function apiPut<T>(endpoint: string, body: unknown): Promise<T> {
 
-  const token = authService.getToken();
-
-  const response = await fetch(
-    `${API_BASE_URL}${endpoint}`,
+  return request<T>(
+    endpoint,
     {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token
-          ? { Authorization: `Bearer ${token}` }
-          : {}),
-      },
       body: JSON.stringify(body),
-    }
+    },
+    true
   );
-
-  if (!response.ok) {
-
-    throw new Error(
-      `Erro ao atualizar dados. HTTP ${response.status}`
-    );
-  }
-
-  return response.json() as Promise<T>;
 }
