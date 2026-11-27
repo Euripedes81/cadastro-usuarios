@@ -45,14 +45,14 @@ namespace Api.Controllers.V1
                 {
                     StatusCodes.Status404NotFound =>
                         NotFound(new ErrorResponse(
-                            MessageResponse.PerfilUsuarioNaoEncontrado,
+                            ApiMessages.PerfilUsuarioNaoEncontrado,
                             result.ErrorCode.ToString()
                         )),
 
                     _ =>
                         StatusCode(
                             StatusCodes.Status500InternalServerError,
-                            new ErrorResponse(MessageResponse.ErroInternoServidor)
+                            new ErrorResponse(ApiMessages.ErroInternoServidor)
                         )
                 };
             }
@@ -82,14 +82,14 @@ namespace Api.Controllers.V1
                 {
                     StatusCodes.Status404NotFound =>
                         NotFound(new ErrorResponse(
-                            MessageResponse.PerfilUsuarioNaoEncontrado,
+                            ApiMessages.PerfilUsuarioNaoEncontrado,
                             result.ErrorCode.ToString()
                         )),
 
                     _ =>
                         StatusCode(
                             StatusCodes.Status500InternalServerError,
-                            new ErrorResponse(MessageResponse.ErroInternoServidor)
+                            new ErrorResponse(ApiMessages.ErroInternoServidor)
                         )
                 };
             }

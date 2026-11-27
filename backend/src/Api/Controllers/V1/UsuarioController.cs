@@ -45,14 +45,14 @@ namespace Api.Controllers.V1
                 {
                     ApplicationErrors.NotFound =>
                         NotFound(new ErrorResponse(
-                            MessageResponse.UsuarioNaoEncontrado,
+                            ApiMessages.UsuarioNaoEncontrado,
                             result.ErrorCode.ToString()
                         )),
 
                     _ =>
                         StatusCode(
                             StatusCodes.Status500InternalServerError,
-                            new ErrorResponse(MessageResponse.ErroInternoServidor)
+                            new ErrorResponse(ApiMessages.ErroInternoServidor)
                         )
                 };
             }
@@ -68,8 +68,7 @@ namespace Api.Controllers.V1
         /// <remarks>Obtém usuários.</remarks>
         [HttpGet]
         [Authorize(Roles = "Administrador")]
-        [ProducesResponseType(typeof(SuccessResponseList<UsuarioResponseDTO>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]        
+        [ProducesResponseType(typeof(SuccessResponseList<UsuarioResponseDTO>), StatusCodes.Status200OK)]              
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Get()
         {         
@@ -82,14 +81,14 @@ namespace Api.Controllers.V1
                 {
                     StatusCodes.Status404NotFound =>
                         NotFound(new ErrorResponse(
-                            MessageResponse.UsuarioNaoEncontrado,
+                            ApiMessages.UsuarioNaoEncontrado,
                             result.ErrorCode.ToString()
                         )),
 
                     _ =>
                         StatusCode(
                             StatusCodes.Status500InternalServerError,
-                            new ErrorResponse(MessageResponse.ErroInternoServidor)
+                            new ErrorResponse(ApiMessages.ErroInternoServidor)
                         )
                 };
             }
@@ -108,7 +107,7 @@ namespace Api.Controllers.V1
         [HttpPost("logins")]
         [AllowAnonymous]
         [ProducesResponseType(typeof(LoginResponseDTO), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> PostLogin([FromBody] LoginDTO loginCreateDTO)
         {
@@ -118,26 +117,39 @@ namespace Api.Controllers.V1
             {
                 return Ok(result.Data);
             }
-           
+
             return result.ErrorCode switch
-            {
+            {                
                 StatusCodes.Status401Unauthorized =>
-                    Unauthorized(new ProblemDetails
-                    {
-                        Title = MessageResponse.CredenciaisInvalidas,
-                        Status = StatusCodes.Status401Unauthorized,
-                        Detail = MessageResponse.EmailSenhaInvalidos
-                    }),
+                    Unauthorized(
+                       new ErrorResponse(
+                           ApiMessages.SenhaIncorreta,
+                           result.ErrorCode.ToString()
+                   )),
+
+
+                StatusCodes.Status403Forbidden =>
+                   StatusCode(StatusCodes.Status403Forbidden,
+                       new ErrorResponse(
+                           ApiMessages.UsuarioInativo,
+                           result.ErrorCode.ToString()
+                   )),               
+
+                StatusCodes.Status404NotFound =>
+                   NotFound(new ErrorResponse(
+                       ApiMessages.UsuarioNaoEncontrado,
+                       result.ErrorCode.ToString()
+                   )),
 
                 _ =>
-                    StatusCode(
-                        StatusCodes.Status500InternalServerError,
-                        new ProblemDetails
-                        {
-                            Title = MessageResponse.ErroInternoServidor,
-                            Status = StatusCodes.Status500InternalServerError
-                        })
-            };          
+                StatusCode(
+                    StatusCodes.Status500InternalServerError,
+                    new ProblemDetails
+                    {
+                        Title = ApiMessages.ErroInternoServidor,
+                        Status = StatusCodes.Status500InternalServerError
+                    })
+            };
         }
 
         /// <summary>
@@ -149,10 +161,8 @@ namespace Api.Controllers.V1
         /// <returns>Cria um usuario.</returns>       
         [HttpPost]
         [Authorize(Roles = "Administrador")]
-        [ProducesResponseType(typeof(SuccessResponse<UsuarioResponseDTO>), StatusCodes.Status201Created)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-        [ProducesResponseType(typeof(ErrorResponse  ), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(SuccessResponse<UsuarioResponseDTO>), StatusCodes.Status201Created)]       
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]        
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Post([FromBody] UsuarioDTO usuarioCreateDTO)
         {
@@ -171,13 +181,13 @@ namespace Api.Controllers.V1
             {
                 StatusCodes.Status409Conflict =>
                     Conflict(new ErrorResponse(
-                        MessageResponse.EmailJaExiste
+                        ApiMessages.EmailJaExiste
                     )),
 
                 _ =>
                     StatusCode(
                         StatusCodes.Status500InternalServerError,
-                        new ErrorResponse(MessageResponse.ErroInternoServidor)
+                        new ErrorResponse(ApiMessages.ErroInternoServidor)
                     )
             };
         }
@@ -194,8 +204,7 @@ namespace Api.Controllers.V1
         [Authorize(Roles = "Administrador")]
         [ProducesResponseType(typeof(SuccessResponse<GenericResponseDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]       
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Put([FromRoute] int id, [FromBody] UsuarioUpdateDTO usuarioUpdateDTO)
         {
@@ -210,25 +219,25 @@ namespace Api.Controllers.V1
             {
                 StatusCodes.Status404NotFound =>
                     NotFound(new ErrorResponse(
-                        MessageResponse.UsuarioNaoEncontrado,
+                        ApiMessages.UsuarioNaoEncontrado,
                         result.ErrorCode.ToString()
                     )),
 
                 StatusCodes.Status409Conflict =>
                     Conflict(new ErrorResponse(
-                        MessageResponse.EmailJaExiste,
+                        ApiMessages.EmailJaExiste,
                         result.ErrorCode.ToString()
                     )),
 
                 StatusCodes.Status403Forbidden =>
                     StatusCode(StatusCodes.Status403Forbidden,
-                        new ErrorResponse(MessageResponse.PerfilUsuarioNaoEncontrado)
+                        new ErrorResponse(ApiMessages.PerfilUsuarioNaoEncontrado)
                     ),
 
                 _ =>
                     StatusCode(
                         StatusCodes.Status500InternalServerError,
-                        new ErrorResponse(MessageResponse.ErroInternoServidor)
+                        new ErrorResponse(ApiMessages.ErroInternoServidor)
                     )
             };
         }
@@ -257,18 +266,18 @@ namespace Api.Controllers.V1
             {
                 StatusCodes.Status404NotFound =>
                     NotFound(new ErrorResponse(
-                        MessageResponse.UsuarioNaoEncontrado,
+                        ApiMessages.UsuarioNaoEncontrado,
                         StatusCodes.Status404NotFound.ToString()
                     )),
                 StatusCodes.Status403Forbidden =>
                     StatusCode(
                         StatusCodes.Status403Forbidden,
-                        new ErrorResponse(MessageResponse.NaoPermitido, StatusCodes.Status403Forbidden.ToString())                     
+                        new ErrorResponse(ApiMessages.NaoPermitido, StatusCodes.Status403Forbidden.ToString())                     
                     ),
                 _ =>
                     StatusCode(
                         StatusCodes.Status500InternalServerError,
-                        new ErrorResponse(MessageResponse.ErroInternoServidor)
+                        new ErrorResponse(ApiMessages.ErroInternoServidor)
                     )
             };           
         }

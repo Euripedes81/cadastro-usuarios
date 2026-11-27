@@ -54,7 +54,8 @@ namespace Application.Services
             try
             {              
                 if (usuario.Id == 1)
-                {
+                {                   
+                    usuario.Email = "admin@cadastro.com.br";
                     usuario.PerfilUsuarioId = 1;
                     usuario.Inativo = false;
                 }
@@ -156,7 +157,17 @@ namespace Application.Services
                     Email = loginDTO.Email
                 });
 
-                if (usuario == null || usuario.Inativo || !_passwordHasher.VerifyPassword(usuario.Senha!, loginDTO.Senha!))
+                if(usuario == null)
+                {
+                    return ApplicationResult<LoginResponseDTO>.Failure(ApplicationErrors.NotFound);
+                }
+
+                if (usuario.Inativo)
+                {
+                    return ApplicationResult<LoginResponseDTO>.Failure(ApplicationErrors.Forbidden);
+                }
+
+                if (!_passwordHasher.VerifyPassword(usuario.Senha!, loginDTO.Senha!))
                 {
                     return ApplicationResult<LoginResponseDTO>.Failure(ApplicationErrors.Unauthorized);
                 }

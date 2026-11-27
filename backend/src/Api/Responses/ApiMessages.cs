@@ -1,6 +1,6 @@
 ﻿namespace Api.Responses
 {
-    public static class MessageResponse
+    public static class ApiMessages
     {
         public const string Ok = "Ok";
         public const string UsuarioNaoEncontrado = "Usuário não encontrado.";
@@ -9,6 +9,7 @@
         public const string ErroInternoServidor = "Erro interno no servidor.";
         public const string CredenciaisInvalidas = "Credenciais inválidas.";
         public const string NaoPermitido = "Não permitido.";
-        public const string EmailSenhaInvalidos = "E-mail ou senha inválidos.";
+        public const string SenhaIncorreta = "Senha incorreta.";
+        public const string UsuarioInativo = "Usuário inativo.";
     }
 }

@@ -82,15 +82,12 @@ public class LoginEndpointTests : IClassFixture<CustomWebApplicationFactory>
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
 
-        var resultado = await response.Content.ReadFromJsonAsync<ProblemDetails>();
+        var resultado = await response.Content.ReadFromJsonAsync<ErrorResponse>();
 
         Assert.NotNull(resultado);
 
-        Assert.Equal(StatusCodes.Status401Unauthorized, resultado.Status);
+        Assert.Equal(StatusCodes.Status401Unauthorized, int.Parse(resultado.ErrorCode!));       
 
-        Assert.Equal(MessageResponse.CredenciaisInvalidas, resultado.Title);
-
-        Assert.Equal(MessageResponse.EmailSenhaInvalidos, resultado.Detail);
     }
 
     [Fact]
@@ -122,6 +119,6 @@ public class LoginEndpointTests : IClassFixture<CustomWebApplicationFactory>
 
         Assert.Equal(StatusCodes.Status500InternalServerError, resultado.Status);
 
-        Assert.Equal(MessageResponse.ErroInternoServidor, resultado.Title);
+        Assert.Equal(ApiMessages.ErroInternoServidor, resultado.Title);
     }
 }
