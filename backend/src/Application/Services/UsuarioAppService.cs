@@ -1,5 +1,5 @@
 ﻿using Application.DTO.Responses;
-using Application.DTO.Create;
+using Application.DTO.Requests;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Domain.Entities;
@@ -41,11 +41,15 @@ namespace Application.Services
                     .Failure(ApplicationErrors.InternalServerError);
             }
         }
-        public async Task<ApplicationResult<int>> AtualizarAsync(int id, UsuarioDTO usuarioDTO)
+        public async Task<ApplicationResult<int>> AtualizarAsync(int id, UsuarioUpdateDTO usuarioUpdateDTO)
         {
-            var usuario = usuarioDTO.MapToEntity();
+            var usuario = usuarioUpdateDTO.MapToEntity();
             usuario.Id = id;
-            usuario.Senha = _passwordHasher.HashPassword(usuarioDTO.Senha!);
+           
+            if (!string.IsNullOrEmpty(usuarioUpdateDTO.Senha))
+            {
+                usuario.Senha = _passwordHasher.HashPassword(usuarioUpdateDTO.Senha!); 
+            }
 
             try
             {              
@@ -67,11 +71,16 @@ namespace Application.Services
                         .Failure(ApplicationErrors.Conflict);
                 }
 
-                if (ex.Message.Contains("affected 0 row"))
+                if (ex.Message.Contains("Object reference not set to an instance of an object"))
                 {
                     return ApplicationResult<int>.Failure(ApplicationErrors.NotFound);
                 }
-                
+
+                if ((bool)(ex.InnerException?.Message.Contains("restrição do FOREIGN KEY"))!)
+                {
+                    return ApplicationResult<int>.Failure(ApplicationErrors.Forbidden);
+                }
+
                 return ApplicationResult<int>
                     .Failure(ApplicationErrors.InternalServerError);
             }       

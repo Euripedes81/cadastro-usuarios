@@ -1,5 +1,5 @@
 ﻿using Application.Common;
-using Application.DTO.Create;
+using Application.DTO.Requests;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Application.Services;
@@ -81,7 +81,7 @@ namespace Application.UnitTests.Services
         {
             // Arrange
 
-            var dto = new UsuarioDTO
+            var dto = new UsuarioUpdateDTO
             {
                 Nome = "João",
                 Email = "joao@email.com",

@@ -1,7 +1,7 @@
 ﻿using Api.IntegrationTests.Fixtures;
 using Api.Responses;
 using Application.Common;
-using Application.DTO.Create;
+using Application.DTO.Requests;
 using Application.DTO.Responses;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

@@ -1,6 +1,6 @@
 using Api.Responses;
 using Application.Common;
-using Application.DTO.Create;
+using Application.DTO.Requests;
 using Application.DTO.Responses;
 using Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -197,7 +197,7 @@ namespace Api.Controllers.V1
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Put([FromRoute] int id, [FromBody] UsuarioDTO usuarioUpdateDTO)
+        public async Task<IActionResult> Put([FromRoute] int id, [FromBody] UsuarioUpdateDTO usuarioUpdateDTO)
         {
             var result = await _usuarioService.AtualizarAsync(id, usuarioUpdateDTO);
 
@@ -219,6 +219,11 @@ namespace Api.Controllers.V1
                         MessageResponse.EmailJaExiste,
                         result.ErrorCode.ToString()
                     )),
+
+                StatusCodes.Status403Forbidden =>
+                    StatusCode(StatusCodes.Status403Forbidden,
+                        new ErrorResponse(MessageResponse.PerfilUsuarioNaoEncontrado)
+                    ),
 
                 _ =>
                     StatusCode(

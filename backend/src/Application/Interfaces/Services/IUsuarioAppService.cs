@@ -1,5 +1,5 @@
 ﻿using Application.Common;
-using Application.DTO.Create;
+using Application.DTO.Requests;
 using Application.DTO.Responses;
 using Application.Interfaces.Services.Generics;
 
@@ -8,7 +8,7 @@ namespace Application.Interfaces.Services
     public interface IUsuarioAppService : IReaderAppService<UsuarioResponseDTO>, IDeleterAppService<int>
     {
         Task<ApplicationResult<LoginResponseDTO>> FazerLoginAsync(LoginDTO loginDTO);
-        Task<ApplicationResult<int>> AtualizarAsync(int id, UsuarioDTO usuarioDTO);
+        Task<ApplicationResult<int>> AtualizarAsync(int id, UsuarioUpdateDTO usuarioUpdateDTO);
         Task<ApplicationResult<int>> AdicionarAsync(UsuarioDTO usuarioDTO);
     }
 }

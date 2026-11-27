@@ -1,8 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace Application.DTO.Create
+namespace Application.DTO.Requests
 {
-    public class UsuarioDTO
+    public class UsuarioUpdateDTO
     {
         [Required]
         public string? Nome { get; set; }
@@ -11,7 +16,7 @@ namespace Application.DTO.Create
         [EmailAddress]
         public string? Email { get; set; }
 
-        [Required]
+       
         [DataType(DataType.Password)]
         [MinLength(6, ErrorMessage = "Número mínimo de caracteres 6.")]
         [MaxLength(20, ErrorMessage = "Número máximo de caracteres 50.")]
@@ -20,15 +25,10 @@ namespace Application.DTO.Create
              ErrorMessage = "A senha deve conter pelo menos uma letra maiúscula, uma letra minúscula, um número e um caractere especial."
              )]
         public string? Senha { get; set; }
-        [Required]
+      
         public PerfilUsuarioDTO? Perfil { get; set; }
+
         [Required]
         public bool Inativo { get; set; }
-    }
-
-    public class PerfilUsuarioDTO
-    {
-        [Required]
-        public int Id { get; set; }
     }
 }

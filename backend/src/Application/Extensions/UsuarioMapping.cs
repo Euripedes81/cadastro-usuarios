@@ -1,4 +1,4 @@
-﻿using Application.DTO.Create;
+﻿using Application.DTO.Requests;
 using Application.DTO.Responses;
 using Domain.Entities;
 
@@ -32,6 +32,18 @@ namespace Application.Extensions
                 Senha = usuarioDTO.Senha,
                 PerfilUsuarioId = usuarioDTO.Perfil!.Id,
                 Inativo = usuarioDTO.Inativo
+            };
+        }
+
+        public static Usuario MapToEntity(this UsuarioUpdateDTO usuarioUpdateDTO)
+        {
+            return new Usuario
+            {
+                Nome = usuarioUpdateDTO.Nome,
+                Email = usuarioUpdateDTO.Email,
+                Senha = usuarioUpdateDTO.Senha,
+                PerfilUsuarioId = usuarioUpdateDTO.Perfil != null ? usuarioUpdateDTO.Perfil.Id : 0,
+                Inativo = usuarioUpdateDTO.Inativo
             };
         }
 
